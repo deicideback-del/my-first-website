@@ -7,10 +7,11 @@ import re
 import codecs
 import tempfile
 from flask import Flask, render_template, request, send_file
+import textures # นำเข้าโมดูลหาเส้นทางที่เราสร้างไว้
 
 app = Flask(__name__)
 
-# --- ระบบคลาสเพื่อแยกข้อมูลของแต่ละ Request ---
+# --- ระบบคลาสเพื่อแยกข้อมูลของแต่ละ Request (ของคุณ) ---
 class AddonMerger:
     def __init__(self, base_temp_dir):
         self.script_entry_points = []
@@ -405,6 +406,28 @@ def merge_addons():
 
     except Exception as e:
         return f"เกิดข้อผิดพลาดในการประมวลผล: {str(e)}", 500
+
+# ----------------------------------------------------
+# --- [NEW] ระบบสำหรับหาเส้นทาง Texture ---
+# ----------------------------------------------------
+@app.route('/find_paths', methods=['POST'])
+def find_paths():
+    uploaded_files = request.files.getlist('files')
+    results = []
+    
+    for file in uploaded_files:
+        if file.filename != '':
+            # เรียกใช้ฟังก์ชันที่อัปเดตใหม่
+            paths_dict, has_json, error = textures.find_all_textures(file, file.filename)
+            
+            results.append({
+                'filename': file.filename,
+                'paths': paths_dict, # ตรงนี้จะเป็น Dictionary ที่เก็บ Items, Blocks, Entities
+                'has_json': has_json,
+                'error': error
+            })
+            
+    return render_template('results.html', results=results)
 
 if __name__ == '__main__':
     app.run(debug=True)
