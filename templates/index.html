@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Addon Merger</title>
+    <title>Minecraft Addon Tools By Deicide</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* ตั้งค่าสีหลัก */
         :root {
-            --primary-color: #2e7d32; /* สีเขียวสไตล์ Minecraft */
+            --primary-color: #2e7d32;
             --primary-hover: #1b5e20;
+            --secondary-color: #1976d2; /* สีน้ำเงินสำหรับปุ่มหาเส้นทาง */
+            --secondary-hover: #115293;
             --bg-color: #e9ecef;
             --text-color: #333;
         }
@@ -43,7 +45,7 @@
 
         h2 { 
             text-align: center; 
-            color: var(--primary-color); 
+            color: var(--text-color); 
             margin-top: 0;
             margin-bottom: 5px;
             font-weight: 600;
@@ -53,8 +55,54 @@
             text-align: center;
             color: #777;
             font-size: 0.9em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
+
+        /* --- ระบบ Tab --- */
+        .tab-container {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active[data-target="merge-section"] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-btn.active[data-target="path-section"] {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* --------------- */
 
         .form-group { 
             margin-bottom: 25px; 
@@ -83,8 +131,8 @@
         }
 
         .file-upload-wrapper:hover {
-            border-color: var(--primary-color);
-            background-color: #f1f8f1;
+            border-color: #888;
+            background-color: #f1f1f1;
         }
 
         .file-upload-wrapper input[type="file"] {
@@ -120,10 +168,9 @@
         }
 
         /* ตกแต่งปุ่มกด */
-        button { 
+        .submit-btn { 
             width: 100%; 
             padding: 15px; 
-            background-color: var(--primary-color); 
             color: white; 
             border: none; 
             border-radius: 8px; 
@@ -134,57 +181,104 @@
             transition: background-color 0.3s ease, transform 0.1s ease;
         }
 
-        button:hover { 
-            background-color: var(--primary-hover); 
-        }
+        .btn-merge { background-color: var(--primary-color); }
+        .btn-merge:hover { background-color: var(--primary-hover); }
 
-        button:active {
+        .btn-path { background-color: var(--secondary-color); }
+        .btn-path:hover { background-color: var(--secondary-hover); }
+
+        .submit-btn:active {
             transform: scale(0.98);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>รวม Addon By Deicide</h2>
-        <p class="subtitle">ระบบรวมไฟล์ Minecraft Addon อัตโนมัติ (Universal)</p>
+        <h2>Addon Tools By Deicide</h2>
+        <p class="subtitle">ระบบจัดการ Minecraft Addon อัตโนมัติ (Universal)</p>
         
-        <form action="/merge" method="post" enctype="multipart/form-data">
-            
-            <div class="form-group">
-                <label>1. อัปโหลดไฟล์ Addon (.zip, .mcaddon, .mcpack)</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" name="files" id="file-input" multiple required accept=".zip,.mcaddon,.mcpack">
-                    <div class="file-upload-text" id="file-text">
-                        📁 คลิกเพื่อเลือกไฟล์<br><small>(สามารถเลือกได้หลายไฟล์พร้อมกัน)</small>
+        <div class="tab-container">
+            <button class="tab-btn active" data-target="merge-section">📦 รวมแอดออน</button>
+            <button class="tab-btn" data-target="path-section">🔍 หาเส้นทาง Texture</button>
+        </div>
+
+        <div id="merge-section" class="tab-content active">
+            <form action="/merge" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>1. อัปโหลดไฟล์ Addon เพื่อรวม (.zip, .mcaddon, .mcpack)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" name="files" class="file-input" multiple required accept=".zip,.mcaddon,.mcpack">
+                        <div class="file-upload-text">
+                            📁 คลิกเพื่อเลือกไฟล์<br><small>(สามารถเลือกได้หลายไฟล์พร้อมกัน)</small>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="output_name">2. ตั้งชื่อไฟล์ผลลัพธ์</label>
-                <input type="text" name="output_name" id="output_name" placeholder="เช่น MySuperAddon (ไม่ต้องใส่ .mcaddon)" required>
-            </div>
-            
-            <button type="submit"> เริ่มรวมไฟล์ (Merge) & ดาวน์โหลด</button>
-        </form>
+                
+                <div class="form-group">
+                    <label for="output_name">2. ตั้งชื่อไฟล์ผลลัพธ์</label>
+                    <input type="text" name="output_name" id="output_name" placeholder="เช่น MySuperAddon (ไม่ต้องใส่ .mcaddon)" required>
+                </div>
+                
+                <button type="submit" class="submit-btn btn-merge">เริ่มรวมไฟล์ (Merge)</button>
+            </form>
+        </div>
+
+        <div id="path-section" class="tab-content">
+            <form action="/find_paths" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>1. อัปโหลดไฟล์ Addon เพื่อตรวจสอบ (.zip, .mcaddon, .mcpack)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" name="files" class="file-input" multiple required accept=".zip,.mcaddon,.mcpack">
+                        <div class="file-upload-text">
+                            📁 คลิกเพื่อเลือกไฟล์<br><small>(สามารถเลือกได้หลายไฟล์พร้อมกัน)</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn btn-path">ตรวจสอบเส้นทาง Texture</button>
+            </form>
+        </div>
+
     </div>
 
     <script>
-        const fileInput = document.getElementById('file-input');
-        const fileText = document.getElementById('file-text');
+        // ระบบสลับ Tab
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                if (this.files.length === 1) {
-                    fileText.innerHTML = `✅ เลือกแล้ว: <b>${this.files[0].name}</b>`;
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // เอาคลาส active ออกจากปุ่มและเนื้อหาทั้งหมดก่อน
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // เพิ่มคลาส active ให้ปุ่มที่โดนคลิก และหน้าต่างเป้าหมาย
+                btn.classList.add('active');
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // ระบบเปลี่ยนข้อความเมื่อเลือกไฟล์ (รองรับทั้ง 2 หน้าต่าง)
+        const fileInputs = document.querySelectorAll('.file-input');
+
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // หา element แสดงข้อความที่อยู่ในกล่องเดียวกัน
+                const textDisplay = this.nextElementSibling; 
+                
+                if (this.files && this.files.length > 0) {
+                    if (this.files.length === 1) {
+                        textDisplay.innerHTML = `✅ เลือกแล้ว: <b>${this.files[0].name}</b>`;
+                    } else {
+                        textDisplay.innerHTML = `✅ เลือกแล้วจำนวน: <b>${this.files.length} ไฟล์</b>`;
+                    }
+                    textDisplay.style.color = '#333';
                 } else {
-                    fileText.innerHTML = `✅ เลือกแล้วจำนวน: <b>${this.files.length} ไฟล์</b>`;
+                    textDisplay.innerHTML = `📁 คลิกเพื่อเลือกไฟล์<br><small>(สามารถเลือกได้หลายไฟล์พร้อมกัน)</small>`;
+                    textDisplay.style.color = '#666';
                 }
-                fileText.style.color = '#2e7d32';
-            } else {
-                fileText.innerHTML = `📁 คลิกเพื่อเลือกไฟล์<br><small>(สามารถเลือกได้หลายไฟล์พร้อมกัน)</small>`;
-                fileText.style.color = '#666';
-            }
+            });
         });
     </script>
 </body>
